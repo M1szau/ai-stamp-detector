@@ -1,9 +1,13 @@
 import { MdOutlineFileUpload } from "react-icons/md";
 import { useState, useRef } from "react";
 
+const API_URL = "http://localhost:5000";
+
 export default function FileUpload() {
     const [file, setFile] = useState<File | null>(null);
     const [dragActive, setDragActive] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [uploadStatus, setUploadStatus] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleBrowseClick = () => {
@@ -41,6 +45,7 @@ export default function FileUpload() {
         }
         
         setFile(selectedFile);
+        setUploadStatus(null);
         console.log("File selected:", selectedFile.name, "Size:", selectedFile.size);
     };
 
@@ -70,6 +75,45 @@ export default function FileUpload() {
         }
     };
 
+    const handleUpload = async () => {
+        if (!file) {
+            alert("Please select a file first");
+            return;
+        }
+
+        setIsLoading(true);
+        setUploadStatus("Uploading...");
+
+        try {
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await fetch(`${API_URL}/api/upload`, {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error(`Upload failed: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            setUploadStatus("Upload successful!");
+            console.log("Server response:", data);
+            
+            //Optional: Reset file after successful upload
+            setTimeout(() => {
+                setFile(null);
+                setUploadStatus(null);
+            }, 2000);
+        } catch (error) {
+            console.error("Upload error:", error);
+            setUploadStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <>
             <div
@@ -96,6 +140,20 @@ export default function FileUpload() {
                     >
                         Browse Files
                     </button>
+                    {file && (
+                        <button
+                            onClick={handleUpload}
+                            disabled={isLoading}
+                            className="mt-4 px-6 py-2 bg-green-500 text-white text-2xl rounded-3xl hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                        >
+                            {isLoading ? "Uploading..." : "Upload to Server"}
+                        </button>
+                    )}
+                    {uploadStatus && (
+                        <p className={`mt-4 text-lg font-semibold ${uploadStatus.includes("Error") ? "text-red-500" : "text-green-500"}`}>
+                            {uploadStatus}
+                        </p>
+                    )}
                     <input
                         ref={fileInputRef}
                         type="file"
