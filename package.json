@@ -1,14 +1,20 @@
 {
   "name": "ai-stamp-detector",
   "version": "1.0.0",
-  "description": "",
+  "description": "PDF Stamp Detection Application",
   "main": "index.js",
   "scripts": {
+    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
     "frontend:dev": "npm --prefix frontend run dev",
-    "frontend:build": "npm --prefix frontend run build"
+    "frontend:build": "npm --prefix frontend run build",
+    "backend:dev": "cd backend && .\\venv\\Scripts\\python main.py",
+    "backend:install": "cd backend && .\\venv\\Scripts\\pip install -r requirements.txt"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
 }
