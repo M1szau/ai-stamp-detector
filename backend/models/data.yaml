@@ -1,0 +1,14 @@
+names:
+- stamp
+nc: 1
+path: C:\Users\hades\Desktop\Studies\term 5\Artificial Intelligence\Project\ai-stamp-detector\docs\Stamps
+  Dataset 2
+roboflow:
+  license: CC BY 4.0
+  project: stamp-6ho0x
+  url: https://universe.roboflow.com/mercedes-khci9/stamp-6ho0x/dataset/1
+  version: 1
+  workspace: mercedes-khci9
+test: test/images
+train: train/images
+val: valid/images
