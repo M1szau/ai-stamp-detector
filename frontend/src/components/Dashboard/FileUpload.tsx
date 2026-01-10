@@ -3,11 +3,37 @@ import { useState, useRef } from "react";
 
 const API_URL = "http://localhost:5000";
 
+interface DetectionResult {
+    bbox: number[];
+    confidence: number;
+    class: string;
+    class_id: number;
+}
+
+interface PageResult {
+    page_number: number;
+    stamps_count: number;
+    detections: DetectionResult[];
+}
+
+interface UploadResponse {
+    message: string;
+    filename: string;
+    has_stamps: boolean;
+    total_stamps: number;
+    total_pages: number;
+    pages?: PageResult[];
+    annotated_paths?: string[];
+    detections?: DetectionResult[];
+    annotated_path?: string;
+}
+
 export default function FileUpload() {
     const [file, setFile] = useState<File | null>(null);
     const [dragActive, setDragActive] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+    const [results, setResults] = useState<UploadResponse | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleBrowseClick = () => {
@@ -46,6 +72,7 @@ export default function FileUpload() {
         
         setFile(selectedFile);
         setUploadStatus(null);
+        setResults(null); 
         console.log("File selected:", selectedFile.name, "Size:", selectedFile.size);
     };
 
@@ -82,11 +109,13 @@ export default function FileUpload() {
         }
 
         setIsLoading(true);
-        setUploadStatus("Uploading...");
+        setUploadStatus("Processing...");
+        setResults(null);
 
         try {
             const formData = new FormData();
             formData.append("file", file);
+            formData.append("confidence", "0.25"); // Default confidence threshold
 
             const response = await fetch(`${API_URL}/api/upload`, {
                 method: "POST",
@@ -94,21 +123,24 @@ export default function FileUpload() {
             });
 
             if (!response.ok) {
-                throw new Error(`Upload failed: ${response.statusText}`);
+                const errorData = await response.json();
+                throw new Error(errorData.error || `Upload failed: ${response.statusText}`);
             }
 
-            const data = await response.json();
-            setUploadStatus("Upload successful!");
-            console.log("Server response:", data);
+            const data: UploadResponse = await response.json();
+            setResults(data);
             
-            //Optional: Reset file after successful upload
-            setTimeout(() => {
-                setFile(null);
-                setUploadStatus(null);
-            }, 2000);
+            if (data.has_stamps) {
+                setUploadStatus(`Success! Found ${data.total_stamps} stamp${data.total_stamps > 1 ? 's' : ''} in ${data.total_pages} page${data.total_pages > 1 ? 's' : ''}`);
+            } else {
+                setUploadStatus("No stamps detected in the document");
+            }
+            
+            console.log("Detection results:", data);
         } catch (error) {
             console.error("Upload error:", error);
             setUploadStatus(`Error: ${error instanceof Error ? error.message : "Unknown error"}`);
+            setResults(null);
         } finally {
             setIsLoading(false);
         }
@@ -146,11 +178,15 @@ export default function FileUpload() {
                             disabled={isLoading}
                             className="mt-4 px-6 py-2 bg-green-500 text-white text-2xl rounded-3xl hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
-                            {isLoading ? "Uploading..." : "Upload to Server"}
+                            {isLoading ? "Processing..." : "Analyze Document"}
                         </button>
                     )}
                     {uploadStatus && (
-                        <p className={`mt-4 text-lg font-semibold ${uploadStatus.includes("Error") ? "text-red-500" : "text-green-500"}`}>
+                        <p className={`mt-4 text-lg font-semibold ${
+                            uploadStatus.includes("Error") ? "text-red-500" : 
+                            uploadStatus.includes("No stamps") ? "text-yellow-600" : 
+                            "text-green-500"
+                        }`}>
                             {uploadStatus}
                         </p>
                     )}
@@ -163,6 +199,100 @@ export default function FileUpload() {
                     />
                 </div>
             </div>
+
+            {/* Results Display */}
+            {results && results.has_stamps && (
+                <div className="max-w-6xl m-auto mt-8 p-6 bg-white rounded-lg shadow-lg">
+                    <h2 className="text-3xl font-bold mb-4 text-center text-green-600">
+                        ✓ Stamps Detected
+                    </h2>
+                    <p className="text-center text-xl mb-6">
+                        Found {results.total_stamps} stamp{results.total_stamps > 1 ? 's' : ''} across {results.total_pages} page{results.total_pages > 1 ? 's' : ''}
+                    </p>
+
+                    {/* Display annotated images */}
+                    <div className="space-y-6">
+                        {results.annotated_paths && results.annotated_paths.map((path, index) => {
+                            const filename = path.split('\\').pop() || path.split('/').pop();
+                            const pageNum = results.pages?.[index]?.page_number || index + 1;
+                            const stampsOnPage = results.pages?.[index]?.stamps_count || 0;
+                            
+                            return (
+                                <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                                    <h3 className="text-xl font-semibold mb-2">
+                                        Page {pageNum} - {stampsOnPage} stamp{stampsOnPage > 1 ? 's' : ''} detected
+                                    </h3>
+                                    <img
+                                        src={`${API_URL}/api/results/${filename}`}
+                                        alt={`Page ${pageNum} with detected stamps`}
+                                        className="w-full rounded border border-gray-300"
+                                        onError={(e) => {
+                                            console.error('Failed to load image:', filename);
+                                            e.currentTarget.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>';
+                                        }}
+                                    />
+                                    
+                                    {/* Show detection details */}
+                                    {results.pages?.[index]?.detections && (
+                                        <div className="mt-3">
+                                            <h4 className="font-semibold text-lg">Detection Details:</h4>
+                                            <ul className="list-disc list-inside mt-2">
+                                                {results.pages[index].detections.map((det, detIdx) => (
+                                                    <li key={detIdx} className="text-gray-700">
+                                                        Stamp #{detIdx + 1}: Confidence {(det.confidence * 100).toFixed(1)}%
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+
+                        {/* For single image files */}
+                        {results.annotated_path && (
+                            <div className="border rounded-lg p-4 bg-gray-50">
+                                <h3 className="text-xl font-semibold mb-2">
+                                    Detected {results.total_stamps} stamp{results.total_stamps > 1 ? 's' : ''}
+                                </h3>
+                                <img
+                                    src={`${API_URL}/api/results/${results.annotated_path.split('\\').pop() || results.annotated_path.split('/').pop()}`}
+                                    alt="Detected stamps"
+                                    className="w-full rounded border border-gray-300"
+                                />
+                                
+                                {results.detections && (
+                                    <div className="mt-3">
+                                        <h4 className="font-semibold text-lg">Detection Details:</h4>
+                                        <ul className="list-disc list-inside mt-2">
+                                            {results.detections.map((det, detIdx) => (
+                                                <li key={detIdx} className="text-gray-700">
+                                                    Stamp #{detIdx + 1}: Confidence {(det.confidence * 100).toFixed(1)}%
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* No stamps detected message */}
+            {results && !results.has_stamps && (
+                <div className="max-w-4xl m-auto mt-8 p-6 bg-yellow-50 rounded-lg shadow-lg border-2 border-yellow-400">
+                    <h2 className="text-3xl font-bold mb-2 text-center text-yellow-700">
+                        ⚠ No Stamps Detected
+                    </h2>
+                    <p className="text-center text-xl text-gray-700">
+                        The document was analyzed but no stamps were found.
+                    </p>
+                    <p className="text-center text-gray-600 mt-2">
+                        Analyzed {results.total_pages} page{results.total_pages > 1 ? 's' : ''}
+                    </p>
+                </div>
+            )}
         </>
     );
 }

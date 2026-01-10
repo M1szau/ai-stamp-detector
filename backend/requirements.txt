@@ -2,3 +2,18 @@ Flask==3.0.0
 Flask-CORS==4.0.0
 Werkzeug==3.0.1
 python-dotenv==1.0.0
+
+#YOLO and ML dependencies
+ultralytics>=8.0.0
+torch>=2.0.0
+torchvision>=0.15.0
+opencv-python>=4.8.0
+numpy>=1.24.0
+Pillow>=10.0.0
+PyYAML>=6.0
+
+#PDF processing
+pdf2image>=1.16.0
+
+
+
