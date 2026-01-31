@@ -1,179 +1,394 @@
 # AI Stamp Detector
 
-An automated tool for authenticating stamps using artificial intelligence. This project leverages machine learning to verify the authenticity of stamps in documents.
+An intelligent document analysis system that automatically detects and identifies stamps in PDF documents and images using YOLOv11 deep learning model. Upload your documents and get instant stamp detection results with visual annotations.
 
 ## Features
 
-- **AI-Powered Authentication**: Uses advanced AI models to analyze and verify stamp authenticity
-- **User-Friendly Interface**: Clean and intuitive web interface for easy stamp verification
-- **PDF Support**: Upload and process PDF documents containing stamps
-- **Real-Time Results**: Get instant verification results with detailed analysis
+- **AI-Powered Detection**: Uses YOLOv11 (Ultralytics) for accurate stamp detection in documents
+- **Multi-Format Support**: Process both PDF documents and images (JPG, JPEG, PNG)
+- **PDF Page-by-Page Analysis**: Automatically converts PDF pages to images and analyzes each page
+- **Visual Annotations**: Returns annotated images with detected stamps highlighted
+- **Confidence Threshold Control**: Adjustable confidence levels for detection accuracy
+- **RESTful API**: Flask-based backend with CORS support for easy integration
+- **Modern Web Interface**: React + TypeScript frontend with drag-and-drop file upload
+- **Real-Time Results**: Get instant detection results with detailed statistics
+
+## Current Capabilities
+
+**Stamp Detection** - Detects stamps in PDF documents and images  
+**Trained Model** - Pre-trained YOLOv11n model included (`stamp_detector_n_best.pt`)  
+**API Endpoints** - Upload, analyze, and retrieve annotated results  
+**PDF Processing** - Built-in Poppler integration for PDF-to-image conversion  
+**GPU Support** - Automatic CUDA detection for faster processing  
+**File Management** - Automatic handling of uploads and results  
 
 ## Project Structure
 
 ```
 ai-stamp-detector/
-├── frontend/                 # React + TypeScript + Vite frontend application
+├── backend/
+│   ├── main.py                         # Flask API server
+│   ├── stamp_detector.py               # YOLO stamp detection module
+│   ├── train_model.py                  # Model training script
+│   ├── requirements.txt                # Python dependencies
+│   ├── models/
+│   │   ├── stamp_detector_n_best.pt    # Trained YOLOv11 model
+│   │   └── data.yaml                   # Dataset configuration
+│   ├── poppler-25.12.0/                # PDF processing library
+│   ├── uploads/                        # Uploaded files directory
+│   └── results/                        # Annotated results directory
+├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Box.tsx      # Reusable card component for displaying feature information
 │   │   │   └── Dashboard/
+│   │   │       ├── Dashboard.tsx       # Main dashboard component
 │   │   │       ├── Header.tsx          # Application header
-│   │   │       ├── Description.tsx     # "How it works" section with feature cards
-│   │   │       └── FileUpload.tsx      # File upload interface
-│   │   ├── App.tsx          # Main application component
-│   │   ├── main.tsx         # Entry point
-│   │   └── assets/          # Static assets
+│   │   │       ├── Description.tsx     # Feature showcase
+│   │   │       ├── FileUpload.tsx      # File upload interface
+│   │   │       └── Box.tsx             # UI box component
+│   │   ├── App.tsx                     # Main application
+│   │   └── main.tsx                    # Entry point
 │   ├── package.json
 │   ├── vite.config.ts
-│   ├── tailwind.config.js   # Tailwind CSS configuration
-│   ├── postcss.config.js    # PostCSS configuration
-│   └── tsconfig.json
-├── backend/                  # Backend API (to be implemented)
-├── docs/                     # Project documentation
-└── README.md                # This file
+│   └── tailwind.config.js
+├── docs/
+│   └── Stamps Dataset 2/               # Training dataset
+└── README.md
 ```
 
 ## Tech Stack
 
-### Frontend
-- **React 19.2.0** - JavaScript library for building user interfaces
-- **TypeScript** - JavaScript with static typing
-- **Vite 7.2.4** - Fast frontend build tool and development server
-- **Tailwind CSS** - Utility-first CSS framework for styling
-- **React Icons** - Icon library with popular icon sets
-
 ### Backend
-- (To be implemented)
+- **Python 3.13** - Programming language
+- **Flask 3.0.0** - Web framework
+- **YOLOv11 (Ultralytics)** - Deep learning model for object detection
+- **PyTorch** - Deep learning framework
+- **OpenCV** - Image processing
+- **pdf2image** - PDF to image conversion
+- **Poppler** - PDF rendering (included in project)
+
+### Frontend
+- **React 19.2.0** - UI library
+- **TypeScript** - Type-safe JavaScript
+- **Vite 7.2.4** - Build tool and dev server
+- **Tailwind CSS 4** - Utility-first CSS framework
+- **React Icons** - Icon library
 
 ## Prerequisites
 
-- Node.js (v18 or higher)
-- npm or yarn package manager
+- **Python 3.13** (or 3.10+)
+- **Node.js v18+** and npm
+- **Git** (for cloning the repository)
 
-## Installation
+## Installation & Setup
 
-### 1. Clone the repository
+### Step 1: Clone the Repository
+
 ```bash
 git clone <repository-url>
 cd ai-stamp-detector
 ```
 
-### 2. Install frontend dependencies
+### Step 2: Setup Backend
+
+#### 2.1 Navigate to backend directory
+```bash
+cd backend
+```
+
+#### 2.2 Create a Python virtual environment (recommended)
+```bash
+python -m venv venv
+```
+
+#### 2.3 Activate the virtual environment
+
+**Windows:**
+```bash
+venv\Scripts\activate
+```
+
+**macOS/Linux:**
+```bash
+source venv/bin/activate
+```
+
+#### 2.4 Install Python dependencies
+```bash
+pip install -r requirements.txt
+```
+
+This will install:
+- Flask and Flask-CORS
+- Ultralytics (YOLOv11)
+- PyTorch and torchvision
+- OpenCV, NumPy, Pillow
+- pdf2image
+- Other required packages
+
+#### 2.5 Verify Poppler installation
+
+The project includes Poppler 25.12.0 in `backend/poppler-25.12.0/`. The application is configured to use this local installation automatically. Verify it exists:
+
+```bash
+# Windows
+dir poppler-25.12.0\Library\bin
+
+# macOS/Linux
+ls poppler-25.12.0/Library/bin
+```
+
+You should see executables like `pdfinfo.exe`, `pdftoppm.exe`, etc.
+
+### Step 3: Setup Frontend
+
+#### 3.1 Open a new terminal and navigate to frontend directory
 ```bash
 cd frontend
+```
+
+#### 3.2 Install Node.js dependencies
+```bash
 npm install
 ```
 
-## Running the Project
+## Running the Application
 
-### Development Mode
+### Step 1: Start the Backend Server
 
-1. Start the development server:
+In the backend directory (with virtual environment activated):
+
+```bash
+python main.py
+```
+
+The Flask server will start on `http://localhost:5000`
+
+You should see output like:
+```
+Using Poppler from: <path>/backend/poppler-25.12.0/Library/bin
+Loading model from: <path>/backend/models/stamp_detector_n_best.pt
+Using device: cuda  # or 'cpu' if no GPU
+Stamp detector initialized successfully!
+ * Running on http://127.0.0.1:5000
+```
+
+### Step 2: Start the Frontend Development Server
+
+In a new terminal, navigate to the frontend directory:
+
 ```bash
 cd frontend
 npm run dev
 ```
 
-2. Open your browser and navigate to:
+The Vite development server will start on `http://localhost:5173`
+
+### Step 3: Access the Application
+
+Open your browser and navigate to:
 ```
-http://localhost:5173/
+http://localhost:5173
 ```
 
-The application will automatically reload when you make changes to the code.
+## Usage
 
-### Build for Production
+1. **Upload a Document**: Drag and drop a PDF or image file, or click to browse
+2. **Wait for Processing**: The AI model analyzes the document page by page
+3. **View Results**: See detection statistics and download annotated images with stamps highlighted
+
+### API Endpoints
+
+#### `POST /api/upload`
+Upload and analyze a document for stamps
+
+**Request:**
+- Content-Type: `multipart/form-data`
+- Body: `file` (PDF or image), `confidence` (optional, default: 0.25)
+
+**Response:**
+```json
+{
+  "message": "File processed successfully",
+  "filename": "document.pdf",
+  "has_stamps": true,
+  "total_stamps": 3,
+  "total_pages": 2,
+  "pages": [
+    {
+      "page_number": 1,
+      "stamps_count": 2,
+      "detections": [...]
+    }
+  ]
+}
+```
+
+#### `GET /api/results/<filename>`
+Download annotated result image
+
+#### `GET /api/health`
+Check API health status
+
+**Response:**
+```json
+{
+  "status": "ok",
+  "model_status": "ready"
+}
+```
+
+#### `GET /api/model/info`
+Get information about the loaded YOLOv11 model
+
+## Model Information
+
+- **Model Type**: YOLOv11n (nano - optimized for speed)
+- **Training Dataset**: Custom stamp dataset with annotated stamps
+- **Model File**: `backend/models/stamp_detector_n_best.pt`
+- **Classes**: Stamp detection (single class)
+- **Input**: Images at various resolutions (auto-scaled)
+- **Output**: Bounding boxes with confidence scores
+
+## Configuration
+
+### Adjusting Detection Confidence
+
+In the upload request, set the `confidence` parameter (0.0 - 1.0):
+- Lower values (0.15-0.25): More detections, may include false positives
+- Higher values (0.5-0.75): Fewer, more confident detections
+
+### File Size Limits
+
+Default: 50MB per file (configurable in `backend/main.py`)
+
+### Supported File Types
+
+- **Images**: `.jpg`, `.jpeg`, `.png`
+- **Documents**: `.pdf`
+
+## Build for Production
+
+### Frontend
 
 ```bash
 cd frontend
 npm run build
 ```
 
-The optimized build will be generated in the `frontend/dist/` directory.
+Output: `frontend/dist/` directory
 
-### Preview Production Build
+### Backend
 
-```bash
-cd frontend
-npm run preview
-```
+The backend runs with Flask. For production deployment, consider using:
+- **Gunicorn** (Linux/macOS): `gunicorn -w 4 -b 0.0.0.0:5000 main:app`
+- **Waitress** (Windows): `waitress-serve --listen=*:5000 main:app`
 
-## Features Overview
+## Troubleshooting
 
-### How It Works
+### Backend Issues
 
-The application provides three main steps:
+**Problem**: `ModuleNotFoundError` for packages  
+**Solution**: Ensure virtual environment is activated and run `pip install -r requirements.txt`
 
-1. **Upload Image** - Users can upload PDF documents containing stamps by dragging and dropping or clicking to browse
-2. **AI Analysis** - The artificial intelligence analyzes the stamp authenticity using advanced algorithms
-3. **Get Results** - Users receive instant verification results with detailed analysis
+**Problem**: Model not found error  
+**Solution**: Verify `backend/models/stamp_detector_n_best.pt` exists. If missing, train a model using `train_model.py`
+
+**Problem**: Poppler not found / PDF processing fails  
+**Solution**: Ensure `backend/poppler-25.12.0/Library/bin` directory exists with executables
+
+**Problem**: CUDA out of memory  
+**Solution**: The model will automatically fall back to CPU. Restart the backend to clear GPU memory.
+
+### Frontend Issues
+
+**Problem**: Cannot connect to backend  
+**Solution**: Ensure Flask server is running on `http://localhost:5000` and CORS is enabled
+
+**Problem**: Build errors  
+**Solution**: Delete `node_modules` and `package-lock.json`, then run `npm install` again
 
 ## Development
 
-### Available Scripts
+### Training a New Model
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint to check code quality
+To train or retrain the stamp detection model:
 
-### Project Structure
-
-The frontend is organized with a component-based architecture:
-- **Box Component** - Reusable card component that displays feature information with customizable icons and colors
-- **Header** - Application header with branding
-- **Description** - Section showcasing the three-step process with colored icon cards
-- **FileUpload** - Drag-and-drop file upload interface
-
-## Component Props
-
-### Box Component
-```tsx
-interface BoxProps {
-  icon: ReactNode;           // React icon component
-  title: string;             // Card title
-  description: string;       // Card description
-  iconColor: string;         // Tailwind color class (e.g., "bg-blue-400")
-}
+```bash
+cd backend
+python train_model.py
 ```
 
-## Styling
+The script will:
+1. Load the dataset from `docs/Stamps Dataset 2/`
+2. Train YOLOv11 model
+3. Save the best model to `models/stamp_detector_n_best.pt`
 
-This project uses **Tailwind CSS** for styling. All styles are utility-based using Tailwind classes.
+### Testing the Detector
 
-Key Tailwind configurations:
-- Custom content paths configured in `tailwind.config.js`
-- PostCSS integration via `postcss.config.js`
-- Responsive design support
-- Color palette: Blue, Violet, and Green for primary interactive elements
+Test the stamp detector directly:
+
+```bash
+cd backend
+python stamp_detector.py --pdf path/to/document.pdf
+python stamp_detector.py --image path/to/image.jpg
+```
+
+### Available Frontend Scripts
+
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Build optimized production bundle
+- `npm run preview` - Preview production build locally
+- `npm run lint` - Run ESLint for code quality checks
+
+## Project Timeline
+
+- **Initial Setup**: Frontend interface with React + TypeScript + Vite
+- **Backend Development**: Flask API with YOLOv11 integration
+- **Model Training**: Custom stamp detection model trained on annotated dataset
+- **PDF Support**: Poppler integration for multi-page PDF processing
+- **Current Status**: Fully functional stamp detection system
 
 ## Future Enhancements
 
-- Backend API implementation for AI model integration
-- User authentication and account management
-- History of uploaded documents and verification results
-- Advanced filtering and search capabilities
-- Batch processing for multiple documents
-- Export verification reports
+- [ ] Stamp authenticity verification (genuine vs. fake)
+- [ ] User authentication and session management
+- [ ] Document history and search functionality
+- [ ] Batch processing for multiple files
+- [ ] Export detection reports (PDF/CSV)
+- [ ] Advanced filtering by confidence level
+- [ ] Mobile-responsive design improvements
+- [ ] Docker containerization
+- [ ] Cloud deployment (AWS/Azure/GCP)
 
 ## Contributing
 
-Contributions are welcome! Please follow these steps:
+This is an academic project. Contributions are welcome for educational purposes.
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
+2. Create a feature branch: `git checkout -b feature/AmazingFeature`
+3. Commit your changes: `git commit -m 'Add some AmazingFeature'`
+4. Push to the branch: `git push origin feature/AmazingFeature`
 5. Open a Pull Request
 
 ## License
 
-This project is part of an academic AI project. Please refer to your institution's policies regarding code sharing and distribution.
+This project is part of an Artificial Intelligence course project (Term 5). All rights reserved.
+
+## Acknowledgments
+
+- **Ultralytics** - For the YOLOv11 framework
+- **Roboflow** - For dataset annotation tools
+- **Poppler** - For PDF rendering capabilities
 
 ## Contact & Support
 
-For questions or issues, please open an issue on the project repository.
+For questions or issues related to this project:
+- Open an issue on the GitHub repository
+- Contact the development team
 
 ---
 
-**Last Updated**: December 17, 2025
+**Last Updated**: January 31, 2026  
+**Version**: 1.0.0  
+**Status**: Production Ready
