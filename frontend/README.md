@@ -1,73 +1,90 @@
-# React + TypeScript + Vite
+# Frontend - AI Stamp Detector UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Modern React web interface for the AI Stamp Detector application, built with TypeScript, Vite, and Tailwind CSS.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Drag & Drop Upload** - Intuitive file upload with drag-and-drop support
+- **PDF Processing** - Upload PDF documents for stamp detection
+- **Real-time Results** - Instant display of detection results
+- **Visual Annotations** - View annotated images with detected stamps highlighted
+- **Responsive Design** - Modern UI with Tailwind CSS styling
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **React 19.2.0** - UI library
+- **TypeScript** - Type-safe JavaScript
+- **Vite 7.2.4** - Build tool and dev server
+- **Tailwind CSS 4** - Utility-first CSS framework
+- **React Icons** - Icon library
 
-## Expanding the ESLint configuration
+## Project Structure
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+frontend/
+├── src/
+│   ├── components/
+│   │   └── Dashboard/
+│   │       ├── Dashboard.tsx      # Main dashboard component
+│   │       ├── Header.tsx         # Application header
+│   │       ├── Description.tsx    # Feature showcase section
+│   │       ├── FileUpload.tsx     # File upload interface with detection results
+│   │       └── Box.tsx            # UI box component
+│   ├── App.tsx                    # Main application component
+│   ├── App.css                    # Application styles
+│   ├── main.tsx                   # Entry point
+│   └── index.css                  # Global styles
+├── package.json                   # Dependencies and scripts
+├── vite.config.ts                 # Vite configuration
+├── tailwind.config.js             # Tailwind CSS configuration
+├── tsconfig.json                  # TypeScript configuration
+└── eslint.config.js               # ESLint configuration
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Setup
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. Install Dependencies
+```bash
+cd frontend
+npm install
 ```
+
+### 2. Start Development Server
+```bash
+npm run dev
+```
+
+The development server will start at `http://localhost:5173`
+
+## Available Scripts
+
+- `npm run dev` - Start development server with hot reload
+- `npm run build` - Build optimized production bundle
+- `npm run preview` - Preview production build locally
+- `npm run lint` - Run ESLint for code quality checks
+
+## Configuration
+
+### API Endpoint
+
+The frontend connects to the backend API at `http://localhost:5000`. To change this, update the `API_URL` constant in `src/components/Dashboard/FileUpload.tsx`.
+
+### File Upload Settings
+
+- **Accepted formats**: PDF (`.pdf`)
+- **Maximum file size**: 50MB
+- **Validation**: File extension, MIME type, and size checks
+
+## Build for Production
+
+```bash
+npm run build
+```
+
+Output files will be generated in the `dist/` directory.
+
+## Notes
+
+- Ensure the backend server is running before using the application
+- CORS is enabled on the backend for frontend integration
+- The application requires a modern browser with ES6+ support
